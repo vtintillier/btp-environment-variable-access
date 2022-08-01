@@ -4,22 +4,25 @@
 
 package com.sap.cloud.environment.servicebinding;
 
-import org.json.JSONArray;
-
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 @FunctionalInterface
-interface LayeredPropertySetter
+interface PropertySetter
 {
     @Nonnull
     String CREDENTIALS_KEY = "credentials";
 
     @Nonnull
     @SuppressWarnings( "unchecked" )
-    LayeredPropertySetter TO_CREDENTIALS = ( binding, name, value ) -> {
+    PropertySetter TO_CREDENTIALS = ( binding, name, value ) -> {
         Map<String, Object> credentials = null;
         if( binding.containsKey(CREDENTIALS_KEY) ) {
             final Object maybeCredentials = binding.get(CREDENTIALS_KEY);
@@ -40,11 +43,11 @@ interface LayeredPropertySetter
     };
 
     @Nonnull
-    LayeredPropertySetter TO_ROOT = Map::put;
+    PropertySetter TO_ROOT = Map::put;
 
     @Nonnull
     @SuppressWarnings( "unchecked" )
-    static LayeredPropertySetter asList( @Nonnull final LayeredPropertySetter actualSetter )
+    static PropertySetter asList( @Nonnull final PropertySetter actualSetter )
     {
         return ( binding, name, value ) -> {
             final List<Object> list;
@@ -62,6 +65,36 @@ interface LayeredPropertySetter
             }
 
             actualSetter.setProperty(binding, name, list);
+        };
+    }
+
+    @Nonnull
+    static PropertySetter asJson( @Nonnull final PropertySetter actualSetter )
+    {
+        return ( binding, name, value ) -> {
+            // Wrap the property value inside another JSON object.
+            // This way we don't have to manually take care of correctly parsing the property type
+            // (it could be an integer, a boolean, a list, or even an entire JSON object).
+            // Instead, we can delegate the parsing logic to our JSON library.
+            final String jsonWrapper = String.format("{\"content\": %s}", value);
+
+            final JSONObject jsonObject;
+            try {
+                jsonObject = new JSONObject(jsonWrapper);
+            }
+            catch( final JSONException e ) {
+                throw new IllegalStateException(
+                    String.format("The provided value '%s' cannot be converted into a valid JSON object.", value));
+            }
+
+            final Object content = jsonObject.get("content");
+            if( content instanceof JSONObject ) {
+                actualSetter.setProperty(binding, name, ((JSONObject) content).toMap());
+            } else if( content instanceof JSONArray ) {
+                actualSetter.setProperty(binding, name, ((JSONArray) content).toList());
+            } else {
+                actualSetter.setProperty(binding, name, content);
+            }
         };
     }
 

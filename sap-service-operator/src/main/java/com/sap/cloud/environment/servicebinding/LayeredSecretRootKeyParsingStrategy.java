@@ -4,15 +4,6 @@
 
 package com.sap.cloud.environment.servicebinding;
 
-import com.sap.cloud.environment.servicebinding.api.DefaultServiceBinding;
-import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -24,6 +15,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sap.cloud.environment.servicebinding.api.DefaultServiceBinding;
+import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 /**
  * A {@link LayeredParsingStrategy} that expects <b>exactly one</b> JSON file that contains both credentials <b>and</b>
@@ -50,18 +52,18 @@ public final class LayeredSecretRootKeyParsingStrategy implements LayeredParsing
     private static final String TAGS_KEY = "tags";
 
     @Nonnull
-    private static final Map<String, LayeredPropertySetter> DEFAULT_PROPERTY_SETTERS;
+    private static final Map<String, PropertySetter> DEFAULT_PROPERTY_SETTERS;
 
     @Nonnull
-    private static final LayeredPropertySetter DEFAULT_FALLBACK_PROPERTY_SETTER = LayeredPropertySetter.TO_CREDENTIALS;
+    private static final PropertySetter DEFAULT_FALLBACK_PROPERTY_SETTER = PropertySetter.TO_CREDENTIALS;
 
     static {
-        final Map<String, LayeredPropertySetter> defaultPropertySetters = new HashMap<>();
-        defaultPropertySetters.put(PLAN_KEY, LayeredPropertySetter.TO_ROOT);
-        defaultPropertySetters.put(INSTANCE_GUID_KEY, LayeredPropertySetter.TO_ROOT);
-        defaultPropertySetters.put(INSTANCE_NAME_KEY, LayeredPropertySetter.TO_ROOT);
-        defaultPropertySetters.put(LABEL_KEY, LayeredPropertySetter.TO_ROOT);
-        defaultPropertySetters.put(TAGS_KEY, LayeredPropertySetter.TO_ROOT);
+        final Map<String, PropertySetter> defaultPropertySetters = new HashMap<>();
+        defaultPropertySetters.put(PLAN_KEY, PropertySetter.TO_ROOT);
+        defaultPropertySetters.put(INSTANCE_GUID_KEY, PropertySetter.TO_ROOT);
+        defaultPropertySetters.put(INSTANCE_NAME_KEY, PropertySetter.TO_ROOT);
+        defaultPropertySetters.put(LABEL_KEY, PropertySetter.TO_ROOT);
+        defaultPropertySetters.put(TAGS_KEY, PropertySetter.TO_ROOT);
 
         DEFAULT_PROPERTY_SETTERS = Collections.unmodifiableMap(defaultPropertySetters);
     }
@@ -70,15 +72,15 @@ public final class LayeredSecretRootKeyParsingStrategy implements LayeredParsing
     private final Charset charset;
 
     @Nonnull
-    private final Map<String, LayeredPropertySetter> propertySetters;
+    private final Map<String, PropertySetter> propertySetters;
 
     @Nonnull
-    private final LayeredPropertySetter fallbackPropertySetter;
+    private final PropertySetter fallbackPropertySetter;
 
     private LayeredSecretRootKeyParsingStrategy(
         @Nonnull final Charset charset,
-        @Nonnull final Map<String, LayeredPropertySetter> propertySetters,
-        @Nonnull final LayeredPropertySetter fallbackPropertySetter )
+        @Nonnull final Map<String, PropertySetter> propertySetters,
+        @Nonnull final PropertySetter fallbackPropertySetter )
     {
         this.charset = charset;
         this.propertySetters = propertySetters;
@@ -175,14 +177,14 @@ public final class LayeredSecretRootKeyParsingStrategy implements LayeredParsing
                 .withServiceName(serviceName)
                 .withServicePlanKey(PLAN_KEY)
                 .withTagsKey(TAGS_KEY)
-                .withCredentialsKey(LayeredPropertySetter.CREDENTIALS_KEY)
+                .withCredentialsKey(PropertySetter.CREDENTIALS_KEY)
                 .build();
         logger.debug("Successfully read service binding from '{}'.", bindingPath);
         return Optional.of(serviceBinding);
     }
 
     @Nonnull
-    private LayeredPropertySetter getPropertySetter( @Nonnull final String propertyName )
+    private PropertySetter getPropertySetter( @Nonnull final String propertyName )
     {
         return propertySetters.getOrDefault(propertyName, fallbackPropertySetter);
     }

@@ -4,16 +4,7 @@
 
 package com.sap.cloud.environment.servicebinding;
 
-import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
-import com.sap.cloud.environment.servicebinding.api.ServiceBindingAccessor;
-import com.sap.cloud.environment.servicebinding.api.exception.ServiceBindingAccessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +15,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
+import com.sap.cloud.environment.servicebinding.api.ServiceBindingAccessor;
+import com.sap.cloud.environment.servicebinding.api.exception.ServiceBindingAccessException;
 
 /**
  * A {@link ServiceBindingAccessor} that is able to load <b>layered</b> {@link ServiceBinding}s from the file system.
@@ -76,12 +76,6 @@ public class SapServiceOperatorLayeredServiceBindingAccessor implements ServiceB
                         LayeredSecretRootKeyParsingStrategy.newDefault(),
                         LayeredSecretKeyParsingStrategy.newDefault(),
                         LayeredDataParsingStrategy.newDefault()));
-
-    /**
-     * The default {@link Charset} that should be used to read property files.
-     */
-    @Nonnull
-    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     @Nonnull
     private final Path rootPath;

@@ -4,10 +4,10 @@
 
 package com.sap.cloud.environment.servicebinding;
 
+import javax.annotation.Nonnull;
+
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nonnull;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class BindingMetadataFactoryTest
 {
     @Nonnull
-    private static final BindingProperty TYPE_PROPERTY = BindingProperty.text("label", "label.txt");
+    private static final BindingProperty TYPE_PROPERTY = BindingProperty.text("type", "type.txt");
 
     @Nonnull
     private static final BindingProperty TAGS_PROPERTY = BindingProperty.json("tags", "tags.json");
